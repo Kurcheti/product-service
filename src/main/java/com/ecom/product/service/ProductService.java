@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.product.entity.Product;
+import com.ecom.product.exception.ProductServiceException;
 import com.ecom.product.repository.ProductRepo;
 import com.ecom.product.util.FileUtils;
 
@@ -29,7 +30,7 @@ public class ProductService {
 	
 	public Product updateProduct(Product product, MultipartFile multipartFile) throws IOException {
 		productRepo.findById(product.getProductId()).orElseThrow(
-				()->new RuntimeException("Product not found with "+product.getProductId()));
+				()->new ProductServiceException("Product not found with "+product.getProductId(),"PRODUCT_NOT_FOUND"));
 		 String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
 		 String fileCode = FileUtils.saveFile(fileName, multipartFile,"product_img");
 		 product.setProductImage(fileCode+"-"+fileName);
@@ -37,7 +38,9 @@ public class ProductService {
 	}
 	
 	public Product getProductById(Integer productId) {
-		return productRepo.findById(productId).get();
+		 Product product = productRepo.findById(productId).orElseThrow(
+				()->new ProductServiceException("Product not found with "+productId,"PRODUCT_NOT_FOUND"));
+		return product;
 	}
 	
 	public Page<Product> getCategories(Product product,Pageable pageable){
@@ -50,6 +53,17 @@ public class ProductService {
 	
 	public void deleteProductById(Integer productId) {
 		productRepo.deleteById(productId);
+	}
+	
+	public void decreaseProductQuantity(Integer productId,Integer quantity) {
+		Product product = productRepo.findById(productId).orElseThrow(
+				()->new ProductServiceException("Product not found with "+productId,"PRODUCT_NOT_FOUND"));
+		if(product.getStock()<quantity) {
+			throw new ProductServiceException("Insufficient Product Quantity to order", "INSUFFICIENT_PRODUCT_QUANTITY");
+		}else {
+			product.setStock(product.getStock() - quantity);
+			productRepo.save(product);
+		}
 	}
 
 }

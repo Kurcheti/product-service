@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +58,12 @@ public class ProductRestController {
 	public ResponseEntity<?> deleteProductById(@PathVariable("productId") Integer productId){
 		productService.deleteProductById(productId);
 		return new ResponseEntity<>("Product "+productId+" deleted Successfully",HttpStatus.OK);
+	}
+	
+	@PutMapping(path="/decreaseProductQuantity/{productId}")
+	public ResponseEntity<String> decreaseProductQuantity(@PathVariable("productId") Integer productId, @RequestParam("quantity") Integer quantity){
+		productService.decreaseProductQuantity(productId,quantity);
+		return new ResponseEntity<>("Product "+productId+" quantity updated Successfully",HttpStatus.OK);
 	}
 	
 	
